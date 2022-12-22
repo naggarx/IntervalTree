@@ -78,9 +78,11 @@ public:
         {
            return new Node(interval);
         }
-        else if(interval->Low < node->interval->Low)
+        else if(interval->Low <= node->interval->Low)
         {
             node->Left = InsertByRec(node->Left,interval);
+
+
         }
         else
         {
@@ -90,8 +92,89 @@ public:
         {
             node->Max = interval->High;
         }
-        return nullptr;
+        return node;
     }
+    Node* DeleteNode(Interval* interval)
+    {
+        if(Root== nullptr)
+        {
+          return Root;
+        }
+            Node* curr = Root;
+            Node* prev = nullptr;
+
+            while (curr != nullptr &&( (curr->interval->Low !=interval->Low) &&(curr->interval->High!=interval->High) ))
+            {
+                cout << "curr interval [ " << curr->interval->Low << ","<<curr->interval->High<<" ] "<<endl;
+                prev = curr;
+                if (interval->Low <= curr->interval->Low)
+                {
+                    curr = curr->Left;
+                }
+                else
+                {
+                    curr = curr->Right;
+                   // cout << "curr interval [ " << curr->interval->Low << ","<<curr->interval->High<<" ] "<<endl;
+                }
+            }
+            if (curr == nullptr)
+            {
+                cout << "interval [ " << interval->Low << ","<<interval->High<<" ] was not found "<<endl;
+                return Root;
+            }
+
+            if(curr->Left == nullptr || curr->Right == nullptr)
+            { Node* Ncurr;
+                if (curr->Left == nullptr)
+                {
+                    Ncurr = curr->Right;
+                }
+                else
+                {
+                    Ncurr = curr->Left;
+                }
+                if (prev == nullptr)
+                {
+                    return Ncurr;
+                }
+
+                if (curr == prev->Left)
+                {
+                    prev->Left = Ncurr;
+                }
+                else
+                {
+                    prev->Right = Ncurr;
+                }
+                free(curr);
+            }
+            else {
+                Node* prev2 = nullptr;
+                Node* temp;
+
+                temp = curr->Right;
+                while (temp->Left != nullptr)
+                {
+                    prev2 = temp;
+                    temp = temp->Left;
+                }
+                if (prev2 != nullptr)
+                {
+                    prev2->Left = temp->Right;
+                }
+                else
+                {
+                    curr->Right = temp->Right;
+                }
+
+                curr->interval->Low = temp->interval->Low;
+                curr->interval->High = temp->interval->High;
+                free(temp);
+            }
+        return Root;
+
+    }
+
 
 };
 int main()
@@ -104,6 +187,7 @@ int main()
     t1.InsertInterval(i3);
     Interval* i4 = new Interval(10,120);
     t1.InsertInterval(i4);
-    cout<<t1.Root->Max;
+    t1.DeleteNode(i);
+    cout<<t1.Root->interval->Low<<endl;
     return 0;
 }
