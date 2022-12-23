@@ -94,6 +94,39 @@ public:
         }
         return node;
     }
+    Node* EditMax(Node* curr)
+    {
+
+        //Node* prev = nullptr;
+        if (curr==nullptr)
+        {
+            return curr;
+        }
+        else if((curr->Left==nullptr) &&(curr->Right==nullptr))
+        {
+           curr->Max=curr->interval->High;
+
+        }
+
+       else if((curr->Left==nullptr) )
+        {
+            curr->Max=max(curr->interval->High,curr->Left->Max);
+        }
+        else if((curr->Right==nullptr) )
+        {
+            curr->Max=max(curr->interval->High,curr->Right->Max);
+        }
+        else
+        {
+            curr->Max=max(curr->interval->High,max(curr->Left->Max,curr->Right->Max));
+
+        }
+        EditMax(curr->Left);
+        EditMax(curr->Right);
+
+    }
+
+
     Node* DeleteNode(Interval* interval)
     {
         if(Root== nullptr)
@@ -105,7 +138,6 @@ public:
 
             while (curr != nullptr &&( (curr->interval->Low !=interval->Low) &&(curr->interval->High!=interval->High) ))
             {
-                cout << "curr interval [ " << curr->interval->Low << ","<<curr->interval->High<<" ] "<<endl;
                 prev = curr;
                 if (interval->Low <= curr->interval->Low)
                 {
@@ -114,12 +146,13 @@ public:
                 else
                 {
                     curr = curr->Right;
-                   // cout << "curr interval [ " << curr->interval->Low << ","<<curr->interval->High<<" ] "<<endl;
+
                 }
             }
             if (curr == nullptr)
             {
                 cout << "interval [ " << interval->Low << ","<<interval->High<<" ] was not found "<<endl;
+
                 return Root;
             }
 
@@ -135,7 +168,9 @@ public:
                 }
                 if (prev == nullptr)
                 {
+                    Ncurr->Max=max(Ncurr->interval->High,max(Ncurr->Left->Max,Ncurr->Right->Max));
                     return Ncurr;
+
                 }
 
                 if (curr == prev->Left)
@@ -169,8 +204,10 @@ public:
 
                 curr->interval->Low = temp->interval->Low;
                 curr->interval->High = temp->interval->High;
+
                 free(temp);
             }
+        EditMax(Root);
         return Root;
 
     }
@@ -181,13 +218,19 @@ int main()
 {
     Interval* i = new Interval(15,20);
     IntervalTree t1(i);
-    Interval* i2 = new Interval(12,95);
+    Interval* i2 = new Interval(17,19);
     t1.InsertInterval(i2);
-    Interval* i3 = new Interval(25,105);
+    Interval* i3 = new Interval(30,40);
     t1.InsertInterval(i3);
-    Interval* i4 = new Interval(10,120);
+    Interval* i4 = new Interval(10,30);
     t1.InsertInterval(i4);
-    t1.DeleteNode(i);
-    cout<<t1.Root->interval->Low<<endl;
+    Interval* i5 = new Interval(5,20);
+    t1.InsertInterval(i5);
+    Interval* i6 = new Interval(12,15);
+    t1.InsertInterval(i6);
+    Interval* i7 = new Interval(18,120);
+    t1.InsertInterval(i7);
+    t1.DeleteNode(i7);
+    cout<<t1.Root->Max<<endl;
     return 0;
 }
