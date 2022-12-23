@@ -117,11 +117,11 @@ public:
 
        else if((curr->Left==nullptr) )
         {
-            curr->Max=max(curr->interval->High,curr->Left->Max);
+            curr->Max=max(curr->interval->High,curr->Right->Max);
         }
         else if((curr->Right==nullptr))
         {
-            curr->Max=max(curr->interval->High,curr->Right->Max);
+            curr->Max=max(curr->interval->High,curr->Left->Max);
         }
         else if((curr->Left!=nullptr) &&(curr->Right!=nullptr))
         {
@@ -210,15 +210,73 @@ public:
         return Root;
 
     }
-    Node* SearchInterval(Interval* interval)
+    bool overlap(Interval* it1,Interval* it2)
     {
+        if((it1->Low<=it2->High) && (it2->Low<=it1->High))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    void Print(Interval* it[],int c)
+    {
+        for(int i=0;i<c;i++)
+        {
+            cout<<"[ "<< it[i]->Low<<","<<it[i]->High<<" ]"<<endl;
+        }
 
     }
+
+    Interval* Search( Node* node,Interval* interval)
+    {
+
+        while(!overlap(interval,node->interval))
+        {
+            if(interval->Low > node->Left->Max)
+            {
+                node=node->Right;
+            }
+            else
+            {
+                node=node->Left;
+            }
+        }
+        return node->interval;
+
+    }
+    void SearchInterval(Interval* it)
+    {
+           Interval* overlaped[10];
+           int c=0;
+            Interval* found= Search(Root,it);
+            while(found!= nullptr)
+            {
+               // cout<<"[ "<< found->Low<<","<<found->High<<" ]"<<endl;
+                overlaped[c] = found;
+                DeleteInterval(found);
+                c++;
+                found=Search(Root, it);
+
+            }
+        cout<<overlaped[0]->High;
+        Print(overlaped,c);
+        for(int i=0;i<c;i++)
+        {
+            InsertInterval(overlaped[i]);
+        }
+
+
+    }
+
 
 
 };
 int main()
 {
+    Interval* ii = new Interval(5,30);
     Interval* i = new Interval(15,20);
     IntervalTree t1(i);
     Interval* i2 = new Interval(17,19);
@@ -236,6 +294,7 @@ int main()
     Interval* i8 = new Interval(16,20);
     t1.InsertInterval(i8);
     t1.DeleteInterval(i3);
-    cout<<t1.Root->Max;
+    t1.SearchInterval(ii);
+   // cout<<i->Low<<" "<<i->High;
     return 0;
 }
