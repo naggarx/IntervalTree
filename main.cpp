@@ -96,30 +96,26 @@ public:
         }
         return node;
     }
-    Node* EditMax(Node* curr)
+    void EditMax(Node* curr)
     {
-
 
         //Node* prev = nullptr;
         if (curr==nullptr)
         {
-            return curr;
+            return;
         }
         EditMax(curr->Left);
         EditMax(curr->Right);
-
-        if((curr->Left==nullptr) &&(curr->Right==nullptr))
+        if((curr->Left==nullptr) && (curr->Right==nullptr))
         {
            curr->Max=curr->interval->High;
 
-
         }
-
-       else if((curr->Left==nullptr) )
+        else if(curr->Left==nullptr )
         {
             curr->Max=max(curr->interval->High,curr->Right->Max);
         }
-        else if((curr->Right==nullptr))
+        else if(curr->Right==nullptr)
         {
             curr->Max=max(curr->interval->High,curr->Left->Max);
         }
@@ -131,35 +127,37 @@ public:
 
     }
 
-    Node* DeleteInterval(Interval* interval)
+    void DeleteInterval(Interval* interval)
     {
-        if(Root== nullptr)
+        if(Root->interval == interval && Root->Left == nullptr && Root->Right == nullptr)
         {
-          return Root;
-        }
             Node* curr = Root;
-            Node* prev = nullptr;
-
-            while (curr != nullptr &&( (curr->interval->Low !=interval->Low) &&(curr->interval->High!=interval->High) ))
+            Root = nullptr;
+            free(curr);
+            return;
+        }
+        Node* curr = Root;
+        Node* prev = nullptr;
+        while (curr != nullptr &&( (curr->interval->Low !=interval->Low) &&(curr->interval->High!=interval->High) ))
+        {
+            prev = curr;
+            if (interval->Low <= curr->interval->Low)
             {
-                prev = curr;
-                if (interval->Low <= curr->interval->Low)
-                {
-                    curr = curr->Left;
-                }
-                else
-                {
-                    curr = curr->Right;
-
-                }
+                curr = curr->Left;
             }
-            if (curr == nullptr)
+            else
             {
+                curr = curr->Right;
+
+            }
+        }
+        if (curr == nullptr)
+        {
                 cout << "interval [ " << interval->Low << ","<<interval->High<<" ] was not found "<<endl;
-                return Root;
-            }
-            if(curr->Left == nullptr || curr->Right == nullptr)
-            {
+                return;
+        }
+        if(curr->Left == nullptr || curr->Right == nullptr)
+        {
                 Node* Ncurr;
                 if (curr->Left == nullptr)
                 {
@@ -169,10 +167,12 @@ public:
                 {
                     Ncurr = curr->Left;
                 }
-                if (prev == nullptr)
+                if(curr == Root)
                 {
-                    Ncurr->Max=max(Ncurr->interval->High,max(Ncurr->Left->Max,Ncurr->Right->Max));
-                    return Ncurr;
+                    Root = Ncurr;
+                    EditMax(Root);
+                    free(curr);
+                    return;
                 }
                 if (curr == prev->Left)
                 {
@@ -183,8 +183,9 @@ public:
                     prev->Right = Ncurr;
                 }
                 free(curr);
-            }
-            else {
+        }
+        else
+        {
                 Node* prev2 = nullptr;
                 Node* temp;
                 temp = curr->Right;
@@ -207,7 +208,6 @@ public:
                 free(temp);
             }
         EditMax(Root);
-        return Root;
 
     }
     bool overlap(Interval* it1,Interval* it2)
@@ -216,56 +216,50 @@ public:
         {
             return true;
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
-    void Print(Interval* it[],int c)
+    void Print(Interval it[],int c)
     {
         for(int i=0;i<c;i++)
         {
-            cout<<"[ "<< it[i]->Low<<","<<it[i]->High<<" ]"<<endl;
+            cout<<"[ "<< it[i].Low<<","<<it[i].High<<" ]"<<endl;
         }
 
     }
-
     Interval* Search( Node* node,Interval* interval)
     {
-
-        while(!overlap(interval,node->interval))
+        if(node == nullptr)
         {
-            if(interval->Low > node->Left->Max)
-            {
-                node=node->Right;
-            }
-            else
-            {
-                node=node->Left;
-            }
+            return nullptr;
         }
-        return node->interval;
+        if(overlap(interval,node->interval))
+        {
+            return node->interval;
+        }
+        if(interval->Low > node->Left->Max)
+        {
+            return Search(node->Right, interval);
+        }
+        return Search(node->Left,interval);
 
     }
     void SearchInterval(Interval* it)
     {
-           Interval* overlaped[10];
-           int c=0;
+            Interval overlaped[1000];
+            int c=0;
             Interval* found= Search(Root,it);
-            while(found!= nullptr)
+            while( found != nullptr)
             {
-               // cout<<"[ "<< found->Low<<","<<found->High<<" ]"<<endl;
-                overlaped[c] = found;
+                overlaped[c] = *found;
                 DeleteInterval(found);
                 c++;
                 found=Search(Root, it);
-
             }
-        cout<<overlaped[0]->High;
         Print(overlaped,c);
         for(int i=0;i<c;i++)
         {
-            InsertInterval(overlaped[i]);
+            auto* interval = new Interval(overlaped[i].Low,overlaped[i].High);
+            InsertInterval(interval);
         }
 
 
@@ -276,25 +270,33 @@ public:
 };
 int main()
 {
-    Interval* ii = new Interval(5,30);
-    Interval* i = new Interval(15,20);
+
+    auto* ii = new Interval(5,300);
+    auto* i = new Interval(15,20);
     IntervalTree t1(i);
-    Interval* i2 = new Interval(17,19);
+    auto* i2 = new Interval(17,19);
     t1.InsertInterval(i2);
-    Interval* i3 = new Interval(30,40);
+    auto* i3 = new Interval(30,40);
     t1.InsertInterval(i3);
-    Interval* i4 = new Interval(10,30);
+    auto* i4 = new Interval(10,30);
     t1.InsertInterval(i4);
-    Interval* i5 = new Interval(5,20);
+    auto* i5 = new Interval(5,20);
     t1.InsertInterval(i5);
-    Interval* i6 = new Interval(12,15);
+    auto* i6 = new Interval(12,15);
     t1.InsertInterval(i6);
-    Interval* i7 = new Interval(18,12);
+    auto* i7 = new Interval(18,120);
     t1.InsertInterval(i7);
-    Interval* i8 = new Interval(16,20);
+    auto* i8 = new Interval(16,20);
     t1.InsertInterval(i8);
-    t1.DeleteInterval(i3);
     t1.SearchInterval(ii);
-   // cout<<i->Low<<" "<<i->High;
+    cout<<"--------------------"<<endl;
+    t1.SearchInterval(ii);
+    cout<<"--------------------"<<endl;
+    t1.SearchInterval(i2);
+
+
+
+
+
     return 0;
 }
