@@ -76,7 +76,9 @@ public:
     {
         if(node == nullptr)
         {
-           return new Node(interval);
+            Node* n=new Node(interval);
+            n->Max=interval->High;
+            return n;
         }
         else if(interval->Low <= node->interval->Low)
         {
@@ -97,14 +99,19 @@ public:
     Node* EditMax(Node* curr)
     {
 
+
         //Node* prev = nullptr;
         if (curr==nullptr)
         {
             return curr;
         }
-        else if((curr->Left==nullptr) &&(curr->Right==nullptr))
+        EditMax(curr->Left);
+        EditMax(curr->Right);
+
+        if((curr->Left==nullptr) &&(curr->Right==nullptr))
         {
            curr->Max=curr->interval->High;
+
 
         }
 
@@ -112,21 +119,19 @@ public:
         {
             curr->Max=max(curr->interval->High,curr->Left->Max);
         }
-        else if((curr->Right==nullptr) )
+        else if((curr->Right==nullptr))
         {
             curr->Max=max(curr->interval->High,curr->Right->Max);
         }
-        else
+        else if((curr->Left!=nullptr) &&(curr->Right!=nullptr))
         {
             curr->Max=max(curr->interval->High,max(curr->Left->Max,curr->Right->Max));
 
         }
-        EditMax(curr->Left);
-        EditMax(curr->Right);
 
     }
 
-    Node* DeleteNode(Interval* interval)
+    Node* DeleteInterval(Interval* interval)
     {
         if(Root== nullptr)
         {
@@ -201,8 +206,12 @@ public:
                 curr->interval->High = temp->interval->High;
                 free(temp);
             }
-        //EditMax(Root);
+        EditMax(Root);
         return Root;
+
+    }
+    Node* SearchInterval(Interval* interval)
+    {
 
     }
 
@@ -222,11 +231,11 @@ int main()
     t1.InsertInterval(i5);
     Interval* i6 = new Interval(12,15);
     t1.InsertInterval(i6);
-    Interval* i7 = new Interval(18,120);
+    Interval* i7 = new Interval(18,12);
     t1.InsertInterval(i7);
     Interval* i8 = new Interval(16,20);
     t1.InsertInterval(i8);
-    t1.DeleteNode(i2);
-    cout<<t1.Root->Right->interval->High;
+    t1.DeleteInterval(i3);
+    cout<<t1.Root->Max;
     return 0;
 }
