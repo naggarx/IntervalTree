@@ -24,7 +24,7 @@ public:
     }
 
 };
-//class node that have Interval , left  , right and max
+//class node that have Interval,left,right and max
 class Node{
 public:
     Interval interval;
@@ -64,7 +64,6 @@ public:
     IntervalTree(Interval interval)
     {
         Root = new Node(interval);
-       // Root->Max=Root->interval->High;
     }
     // InsertInterval function that take interval and insert it in Tree as interval node
     void InsertInterval(Interval interval)
@@ -148,7 +147,7 @@ public:
     // DeleteInterval function delete a node by its interval
     void DeleteInterval(Interval interval)
     {
-        //cout<<"delete [ "<< interval->Low<<","<<interval->High<<" ]"<<endl;
+
         //the tree has only root and its to be deleted
         if(Root->interval == interval && Root->Left == nullptr && Root->Right == nullptr)
         {
@@ -257,7 +256,6 @@ public:
                 else
                 {
                     curr->Right = temp->Right;
-
                 }
                 curr->interval.Low = temp->interval.Low;
                 curr->interval.High = temp->interval.High;
@@ -265,7 +263,6 @@ public:
             }
         // edit max of tree after deletion
         EditMax(Root);
-
     }
     //overlap function checks if 2 intervals overlap and return bool
     static bool overlap(Interval it1,Interval it2)
@@ -303,13 +300,12 @@ public:
             return node->interval;
         }
         // if interval low >node left max search in node right
-        if(node->Left != nullptr && interval.Low > node->Left->Max )
+        if(node->Left != nullptr && interval.Low <= node->Left->Max )
         {
-            return Search(node->Right, interval);
+            return Search(node->Left, interval);
         }
         // else search in node left
-        return Search(node->Left,interval);
-
+        return Search(node->Right,interval);
     }
     //search function that take interval and prints all intervals overlapping with it
     void SearchInterval(Interval it)
@@ -325,7 +321,6 @@ public:
                 DeleteInterval(found);
                 c++;
                 found=Search(Root, it);
-                //cout<<"hereeee [ "<< found->Low<<","<<found->High<<" ]"<<endl;
             }
         //print overlaped intervals
         Print(overlaped,c);
@@ -334,128 +329,116 @@ public:
         {
             InsertInterval(overlaped[i]);
         }
-
-
-
     }
-
-
-
 };
 int main()
 {
+    Interval ii(15,200);
+    IntervalTree t1(ii);
+    Interval ii1(17,19);
+    t1.InsertInterval(ii1);
+    Interval ii2 (30,40);
+    t1.InsertInterval(ii2);
+    Interval ii3 (10,30);
+    t1.InsertInterval(ii3);
+    Interval ii4 (5,20);
+    t1.InsertInterval(ii4);
+    Interval ii5 (12,15);
+    t1.InsertInterval(ii5);
+    Interval ii6 (18,120);
+    t1.InsertInterval(ii6);
+    Interval ii7 (16,20);
+    t1.InsertInterval(ii7);
+    Interval ii8 (9,50);
+    t1.InsertInterval(ii8);
 
-
-
-    Interval i(15,20);
-    IntervalTree t1(i);
-    Interval i2(17,19);
-    t1.InsertInterval(i2);
-    Interval i3 (30,40);
-    t1.InsertInterval(i3);
-    Interval i4 (10,30);
-    t1.InsertInterval(i4);
-    Interval i5 (5,20);
-    t1.InsertInterval(i5);
-    Interval i6 (12,15);
-    t1.InsertInterval(i6);
-    Interval i7 (18,120);
-    t1.InsertInterval(i7);
-    Interval i8 (16,20);
-    t1.InsertInterval(i8);
-    Interval i9 (9,50);
-    t1.InsertInterval(i9);
-    cout<<"Test Case 1"<<endl;
-    Interval ii (5,200);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii.Low<<","<<ii.High<<" ]"<<endl;
+    cout<<"Test 1"<<endl;
+    cout<<"Intervals Overlapping with [ "<< ii.Low<<","<<ii.High<<" ]"<<endl;
     t1.SearchInterval(ii);
     t1.DeleteInterval(ii);
-    cout<<"Root Max after Deleting "<<"[ "<< ii.Low<<","<<ii.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii);
     cout<<"-----------------------------------"<<endl;
 
-    cout<<"Test Case 2"<<endl;
-    Interval ii1 (17,19);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii1.Low<<","<<ii1.High<<" ]"<<endl;
+    cout<<"Test 2"<<endl;
+    cout<<"Intervals Overlapping with [ "<< ii1.Low<<","<<ii1.High<<" ]"<<endl;
     t1.SearchInterval(ii1);
-    //t1.DeleteInterval(ii1);
-    cout<<"Root Max after Deleting "<<"[ "<< ii1.Low<<","<<ii1.High<<" ] interval :"<<endl;
+    t1.DeleteInterval(ii1);
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
-    //t1.InsertInterval(ii1);
+    t1.InsertInterval(ii1);
     cout<<"-----------------------------------"<<endl;
 
-    cout<<"Test Case 3"<<endl;
-    Interval ii2 (10,40);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii2.Low<<","<<ii2.High<<" ]"<<endl;
+    cout<<"Test 3"<<endl;
+    cout<<"Intervals Overlapping with [ "<< ii2.Low<<","<<ii2.High<<" ]"<<endl;
     t1.SearchInterval(ii2);
     t1.DeleteInterval(ii2);
-    cout<<"Root Max after Deleting "<<"[ "<< ii2.Low<<","<<ii2.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii2);
     cout<<"-----------------------------------"<<endl;
 
-    cout<<"Test Case 4"<<endl;
-    Interval ii3 (10,30);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii3.Low<<","<<ii3.High<<" ]"<<endl;
+    cout<<"Test 4"<<endl;
+    cout<<"Intervals Overlapping with ["<< ii3.Low<<","<<ii3.High<<"]"<<endl;
     t1.SearchInterval(ii3);
     t1.DeleteInterval(ii3);
-    cout<<"Root Max after Deleting "<<"[ "<< ii3.Low<<","<<ii3.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii3);
     cout<<"-----------------------------------"<<endl;
 
-    cout<<"Test Case 5"<<endl;
-    Interval ii4 (5,20);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii4.Low<<","<<ii4.High<<" ]"<<endl;
+    cout<<"Test 5"<<endl;
+    cout<<"Intervals Overlapping with [ "<< ii4.Low<<","<<ii4.High<<" ]"<<endl;
     t1.SearchInterval(ii4);
     t1.DeleteInterval(ii4);
-    cout<<"Root Max after Deleting "<<"[ "<< ii4.Low<<","<<ii4.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii4);
     cout<<"-----------------------------------"<<endl;
-    cout<<"Test Case 6"<<endl;
-    Interval ii5 (12,15);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii5.Low<<","<<ii5.High<<" ]"<<endl;
+
+    cout<<"Test 6"<<endl;
+    cout<<"Intervals Overlapping with [ "<< ii5.Low<<","<<ii5.High<<" ]"<<endl;
     t1.SearchInterval(ii5);
     t1.DeleteInterval(ii5);
-    cout<<"Root Max after Deleting "<<"[ "<< ii5.Low<<","<<ii5.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii5);
     cout<<"-----------------------------------"<<endl;
-    cout<<"Test Case 7"<<endl;
-    Interval ii6(18,120);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii6.Low<<","<<ii6.High<<" ]"<<endl;
+
+    cout<<"Test 7"<<endl;
+    cout<<"Intervals Overlapping with [ "<< ii6.Low<<","<<ii6.High<<" ]"<<endl;
     t1.SearchInterval(ii6);
     t1.DeleteInterval(ii6);
-    cout<<"Root Max after Deleting "<<"[ "<< ii6.Low<<","<<ii6.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii6);
     cout<<"-----------------------------------"<<endl;
-    cout<<"Test Case 8"<<endl;
-    Interval ii7(16,20);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii7.Low<<","<<ii7.High<<" ]"<<endl;
+
+    cout<<"Test 8"<<endl;
+    cout<<"Intervals Overlapping with [ "<< ii7.Low<<","<<ii7.High<<" ]"<<endl;
     t1.SearchInterval(ii7);
     t1.DeleteInterval(ii7);
-    cout<<"Root Max after Deleting "<<"[ "<< ii7.Low<<","<<ii7.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii7);
     cout<<"-----------------------------------"<<endl;
-    cout<<"Test Case 9"<<endl;
-    Interval ii8 (30,300);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii8.Low<<","<<ii8.High<<" ]"<<endl;
+
+    cout<<"Test 9"<<endl;
+    cout<<"Intervals Overlapping with [ "<< ii8.Low<<","<<ii8.High<<" ]"<<endl;
     t1.SearchInterval(ii8);
     t1.DeleteInterval(ii8);
-    cout<<"Root Max after Deleting "<<"[ "<< ii8.Low<<","<<ii8.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii8);
     cout<<"-----------------------------------"<<endl;
-    cout<<"Test Case 10"<<endl;
-    Interval ii9 (9,50);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii9.Low<<","<<ii9.High<<" ]"<<endl;
+
+    cout<<"Test 10"<<endl;
+    Interval ii9 (2,300);
+    cout<<"Intervals Overlapping with [ "<< ii9.Low<<","<<ii9.High<<" ]"<<endl;
     t1.SearchInterval(ii9);
     t1.DeleteInterval(ii9);
-    cout<<"Root Max after Deleting "<<"[ "<< ii9.Low<<","<<ii9.High<<" ] interval :"<<endl;
+    cout<<"Current Root Max :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii9);
     cout<<"-----------------------------------"<<endl;
