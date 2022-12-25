@@ -11,8 +11,4 @@ iostream
 -
 cstdlib
 -
-cstdio
--
-cstring
--
 

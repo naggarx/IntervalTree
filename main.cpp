@@ -1,7 +1,5 @@
 #include <iostream>
 #include <cstdlib>
-#include <cstdio>
-#include <cstring>
 using namespace std;
 //class Interval that has low and high
 class Interval{
@@ -20,25 +18,30 @@ public:
         Low = l;
         High = h;
     }
+    bool operator == (Interval const &obj) const
+    {
+        return (obj.High == High && obj.Low == Low);
+    }
 
 };
 //class node that have Interval , left  , right and max
 class Node{
 public:
-    Interval* interval;
+    Interval interval;
     Node* Left;
     Node* Right;
     int Max;
     //Default Constructor that set parameters to nullptr and max to zero
     Node()
     {
-        interval=nullptr;
+        interval.High=0;
+        interval.Low=0;
         Left = nullptr;
         Right = nullptr;
         Max = 0;
     }
     // Parameterized Constructor to set Interval , left  , right and max
-    Node(Interval* interval1)
+    Node(Interval interval1)
     {
         interval = interval1;
         Left = nullptr;
@@ -58,20 +61,20 @@ public:
         Root = nullptr;
     }
     // Parameterized Constructor to set root of the tree
-    IntervalTree(Interval* interval)
+    IntervalTree(Interval interval)
     {
         Root = new Node(interval);
        // Root->Max=Root->interval->High;
     }
     // InsertInterval function that take interval and insert it in Tree as interval node
-    void InsertInterval(Interval* interval)
+    void InsertInterval(Interval interval)
     {
 
         //if Tree is empty , insert the interval as root and set its max to equal interval high
         if(Root == nullptr)
         {
             Root = new Node(interval);
-            Root->Max=interval->High;
+            Root->Max=interval.High;
         }
         // if the Tree is not empty , insert interval node using insertByRec() function
         else
@@ -80,17 +83,17 @@ public:
         }
     }
     // function that takes an interval and root node then find its insertion place in the tree and insert it
-    Node* InsertByRec(Node* node,Interval* interval)
+    Node* InsertByRec(Node* node,Interval interval)
     {
         //if node is empty , insert a new node with the given interval and set its Max
         if(node == nullptr)
         {
             Node* n=new Node(interval);
-            n->Max=interval->High;
+            n->Max=interval.High;
             return n;
         }
         // if interval low is less than or equal current node interval low ,then recurse over the left of the node
-        else if(interval->Low <= node->interval->Low)
+        else if(interval.Low <= node->interval.Low)
         {
             node->Left = InsertByRec(node->Left,interval);
         }
@@ -100,9 +103,9 @@ public:
             node->Right = InsertByRec(node->Right,interval);
         }
         // set max of each inserted node
-        if(node->Max < interval->High)
+        if(node->Max < interval.High)
         {
-            node->Max = interval->High;
+            node->Max = interval.High;
         }
         return node;
     }
@@ -121,35 +124,34 @@ public:
         //if curr has no children max equal interval high
         if((curr->Left==nullptr) && (curr->Right==nullptr))
         {
-           curr->Max=curr->interval->High;
+           curr->Max=curr->interval.High;
 
         }
         //if curr has no left child max equal max between interval high and right node max
         else if(curr->Left==nullptr )
         {
-            curr->Max=max(curr->interval->High,curr->Right->Max);
+            curr->Max=max(curr->interval.High,curr->Right->Max);
         }
         //if curr has no right child max equal max between interval high and left node max
         else if(curr->Right==nullptr)
         {
-            curr->Max=max(curr->interval->High,curr->Left->Max);
+            curr->Max=max(curr->interval.High,curr->Left->Max);
         }
         //if curr has both children max equal max between interval high and left node max and right node max
         else if((curr->Left!=nullptr) &&(curr->Right!=nullptr))
         {
-            curr->Max=max(curr->interval->High,max(curr->Left->Max,curr->Right->Max));
+            curr->Max=max(curr->interval.High,max(curr->Left->Max,curr->Right->Max));
 
         }
 
     }
     // DeleteInterval function delete a node by its interval
-    void DeleteInterval(Interval* interval)
+    void DeleteInterval(Interval interval)
     {
-        cout<<"delete [ "<< interval->Low<<","<<interval->High<<" ]"<<endl;
+        //cout<<"delete [ "<< interval->Low<<","<<interval->High<<" ]"<<endl;
         //the tree has only root and its to be deleted
         if(Root->interval == interval && Root->Left == nullptr && Root->Right == nullptr)
         {
-
             Node* curr = Root;
             Root = nullptr;
             free(curr);
@@ -159,12 +161,12 @@ public:
         Node* curr = Root;
         Node* prev = nullptr;//hold to be deleted node parent
         //Search the tree to find the node with the interval to be deleted starting from the root
-        while (curr != nullptr &&( (curr->interval->Low !=interval->Low) &&(curr->interval->High!=interval->High) ))
+        while (curr != nullptr)
         {
-
-
+            if(curr->interval == interval)
+                break;
             prev = curr;
-            if (interval->Low <= curr->interval->Low)
+            if (interval.Low <= curr->interval.Low)
             {
                 curr = curr->Left;
             }
@@ -176,11 +178,32 @@ public:
         // if node not found return
         if (curr == nullptr)
         {
-                cout << "interval [ " << interval->Low << ","<<interval->High<<" ] was not found "<<endl;
+                cout << "interval [ " << interval.Low << ","<<interval.High<<" ] was not found "<<endl;
                 return;
         }
         //if node has one or no children
-        if(curr->Left == nullptr || curr->Right == nullptr)
+        if(curr->Left == nullptr && curr->Right == nullptr )
+        {
+            if(prev == nullptr)
+            {
+                Root = nullptr;
+                free(curr);
+                return;
+            }
+            //if curr was on left
+            if (curr == prev->Left)
+            {
+                prev->Left = nullptr;
+            }
+                //if curr was on right
+            else
+            {
+                prev->Right = nullptr;
+            }
+            EditMax(Root);
+            free(curr);
+        }
+        else if((curr->Left == nullptr && curr->Right != nullptr ) || (curr->Left != nullptr && curr->Right == nullptr ))
         {
                 Node* Ncurr;// hold child of node to be deleted
                 //if left child =null
@@ -236,8 +259,8 @@ public:
                     curr->Right = temp->Right;
 
                 }
-                curr->interval->Low = temp->interval->Low;
-                curr->interval->High = temp->interval->High;
+                curr->interval.Low = temp->interval.Low;
+                curr->interval.High = temp->interval.High;
                 free(temp);
             }
         // edit max of tree after deletion
@@ -245,10 +268,10 @@ public:
 
     }
     //overlap function checks if 2 intervals overlap and return bool
-    bool overlap(Interval* it1,Interval* it2)
+    static bool overlap(Interval it1,Interval it2)
     {
         // if overlap return true
-        if((it1->Low<=it2->High) && (it2->Low<=it1->High))
+        if((it1.Low<=it2.High) && (it2.Low<=it1.High))
         {
             return true;
         }
@@ -256,7 +279,7 @@ public:
         return false;
     }
     //Print function prints array of all intervals overlapping with a given interval
-    void Print(Interval it[],int c)
+    static void Print(Interval it[],int c)
     {
         for(int i=0;i<c;i++)
         {
@@ -265,13 +288,14 @@ public:
 
     }
     //search function that take interval and returns the first interval overlapping with it
-    Interval* Search( Node* node,Interval* interval)
+    Interval Search( Node* node,Interval interval)
     {
 
         //if node = null return
         if(node == nullptr)
         {
-            return nullptr;
+            Interval int1;
+            return int1;
         }
         // if overlap return interval
         if(overlap(interval,node->interval))
@@ -279,7 +303,7 @@ public:
             return node->interval;
         }
         // if interval low >node left max search in node right
-        if(interval->Low > node->Left->Max)
+        if(node->Left != nullptr && interval.Low > node->Left->Max )
         {
             return Search(node->Right, interval);
         }
@@ -288,30 +312,27 @@ public:
 
     }
     //search function that take interval and prints all intervals overlapping with it
-    void SearchInterval(Interval* it)
+    void SearchInterval(Interval it)
     {
         Interval overlaped[1000];
         int c=0;
-        Interval* found= Search(Root,it);
+        Interval found= Search(Root,it);
             //while interval found not equal null put the matching interval in array of intervals
             // delete the interval and search for other intervals
-            while( found != nullptr)
+            while( found.Low != 0 && found.High != 0)
             {
-                overlaped[c] = *found;
-                //cout<<"hereeee [ "<< overlaped[c].Low<<","<<overlaped[c].High<<" ]"<<endl;
+                overlaped[c] = found;
                 DeleteInterval(found);
                 c++;
                 found=Search(Root, it);
                 //cout<<"hereeee [ "<< found->Low<<","<<found->High<<" ]"<<endl;
             }
-            cout<<"hhhh"<<endl;
         //print overlaped intervals
         Print(overlaped,c);
         //insert all the deleted intervals again
         for(int i=0;i<c;i++)
         {
-            auto* interval = new Interval(overlaped[i].Low,overlaped[i].High);
-            InsertInterval(interval);
+            InsertInterval(overlaped[i]);
         }
 
 
@@ -326,121 +347,115 @@ int main()
 
 
 
-    Interval* i = new Interval(15,20);
+    Interval i(15,20);
     IntervalTree t1(i);
-    Interval* i2 = new Interval(17,19);
+    Interval i2(17,19);
     t1.InsertInterval(i2);
-    Interval* i3 = new Interval(30,40);
+    Interval i3 (30,40);
     t1.InsertInterval(i3);
-    Interval* i4 = new Interval(10,30);
+    Interval i4 (10,30);
     t1.InsertInterval(i4);
-    Interval* i5 = new Interval(5,20);
+    Interval i5 (5,20);
     t1.InsertInterval(i5);
-    Interval* i6 = new Interval(12,15);
+    Interval i6 (12,15);
     t1.InsertInterval(i6);
-    Interval* i7 = new Interval(18,120);
+    Interval i7 (18,120);
     t1.InsertInterval(i7);
-    Interval* i8 = new Interval(16,20);
+    Interval i8 (16,20);
     t1.InsertInterval(i8);
-    Interval* i9 = new Interval(9,50);
+    Interval i9 (9,50);
     t1.InsertInterval(i9);
-
     cout<<"Test Case 1"<<endl;
-    Interval* ii = new Interval(5,200);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii->Low<<","<<ii->High<<" ]"<<endl;
+    Interval ii (5,200);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii.Low<<","<<ii.High<<" ]"<<endl;
     t1.SearchInterval(ii);
-   // t1.DeleteInterval(ii);
-    cout<<"Root Max after Deleting "<<"[ "<< ii->Low<<","<<ii->High<<" ] interval :"<<endl;
+    t1.DeleteInterval(ii);
+    cout<<"Root Max after Deleting "<<"[ "<< ii.Low<<","<<ii.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
-  //  t1.InsertInterval(ii);
+    t1.InsertInterval(ii);
     cout<<"-----------------------------------"<<endl;
 
     cout<<"Test Case 2"<<endl;
-    Interval* ii1 = new Interval(17,19);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii1->Low<<","<<ii1->High<<" ]"<<endl;
+    Interval ii1 (17,19);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii1.Low<<","<<ii1.High<<" ]"<<endl;
     t1.SearchInterval(ii1);
     //t1.DeleteInterval(ii1);
-    cout<<"Root Max after Deleting "<<"[ "<< ii1->Low<<","<<ii1->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii1.Low<<","<<ii1.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     //t1.InsertInterval(ii1);
     cout<<"-----------------------------------"<<endl;
 
     cout<<"Test Case 3"<<endl;
-    Interval* ii2 = new Interval(10,40);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii2->Low<<","<<ii2->High<<" ]"<<endl;
+    Interval ii2 (10,40);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii2.Low<<","<<ii2.High<<" ]"<<endl;
     t1.SearchInterval(ii2);
     t1.DeleteInterval(ii2);
-    cout<<"Root Max after Deleting "<<"[ "<< ii2->Low<<","<<ii2->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii2.Low<<","<<ii2.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii2);
     cout<<"-----------------------------------"<<endl;
 
     cout<<"Test Case 4"<<endl;
-    Interval* ii3 = new Interval(10,30);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii3->Low<<","<<ii3->High<<" ]"<<endl;
+    Interval ii3 (10,30);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii3.Low<<","<<ii3.High<<" ]"<<endl;
     t1.SearchInterval(ii3);
     t1.DeleteInterval(ii3);
-    cout<<"Root Max after Deleting "<<"[ "<< ii3->Low<<","<<ii3->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii3.Low<<","<<ii3.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii3);
     cout<<"-----------------------------------"<<endl;
 
     cout<<"Test Case 5"<<endl;
-    Interval* ii4 = new Interval(5,20);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii4->Low<<","<<ii4->High<<" ]"<<endl;
+    Interval ii4 (5,20);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii4.Low<<","<<ii4.High<<" ]"<<endl;
     t1.SearchInterval(ii4);
     t1.DeleteInterval(ii4);
-    cout<<"Root Max after Deleting "<<"[ "<< ii4->Low<<","<<ii4->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii4.Low<<","<<ii4.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii4);
     cout<<"-----------------------------------"<<endl;
-
     cout<<"Test Case 6"<<endl;
-    Interval* ii5 = new Interval(12,15);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii5->Low<<","<<ii5->High<<" ]"<<endl;
+    Interval ii5 (12,15);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii5.Low<<","<<ii5.High<<" ]"<<endl;
     t1.SearchInterval(ii5);
     t1.DeleteInterval(ii5);
-    cout<<"Root Max after Deleting "<<"[ "<< ii5->Low<<","<<ii5->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii5.Low<<","<<ii5.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii5);
     cout<<"-----------------------------------"<<endl;
-
     cout<<"Test Case 7"<<endl;
-    Interval* ii6 = new Interval(18,120);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii6->Low<<","<<ii6->High<<" ]"<<endl;
+    Interval ii6(18,120);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii6.Low<<","<<ii6.High<<" ]"<<endl;
     t1.SearchInterval(ii6);
     t1.DeleteInterval(ii6);
-    cout<<"Root Max after Deleting "<<"[ "<< ii6->Low<<","<<ii6->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii6.Low<<","<<ii6.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii6);
     cout<<"-----------------------------------"<<endl;
-
     cout<<"Test Case 8"<<endl;
-    Interval* ii7 = new Interval(16,20);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii7->Low<<","<<ii7->High<<" ]"<<endl;
+    Interval ii7(16,20);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii7.Low<<","<<ii7.High<<" ]"<<endl;
     t1.SearchInterval(ii7);
     t1.DeleteInterval(ii7);
-    cout<<"Root Max after Deleting "<<"[ "<< ii7->Low<<","<<ii7->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii7.Low<<","<<ii7.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii7);
     cout<<"-----------------------------------"<<endl;
-
     cout<<"Test Case 9"<<endl;
-    Interval* ii8 = new Interval(30,300);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii8->Low<<","<<ii8->High<<" ]"<<endl;
+    Interval ii8 (30,300);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii8.Low<<","<<ii8.High<<" ]"<<endl;
     t1.SearchInterval(ii8);
     t1.DeleteInterval(ii8);
-    cout<<"Root Max after Deleting "<<"[ "<< ii8->Low<<","<<ii8->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii8.Low<<","<<ii8.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii8);
     cout<<"-----------------------------------"<<endl;
-
     cout<<"Test Case 10"<<endl;
-    Interval* ii9 = new Interval(9,50);
-    cout<<"Intervals Overlapping with interval"<<"[ "<< ii9->Low<<","<<ii9->High<<" ]"<<endl;
+    Interval ii9 (9,50);
+    cout<<"Intervals Overlapping with interval"<<"[ "<< ii9.Low<<","<<ii9.High<<" ]"<<endl;
     t1.SearchInterval(ii9);
     t1.DeleteInterval(ii9);
-    cout<<"Root Max after Deleting "<<"[ "<< ii9->Low<<","<<ii9->High<<" ] interval :"<<endl;
+    cout<<"Root Max after Deleting "<<"[ "<< ii9.Low<<","<<ii9.High<<" ] interval :"<<endl;
     cout<<t1.Root->Max<<endl;
     t1.InsertInterval(ii9);
     cout<<"-----------------------------------"<<endl;
